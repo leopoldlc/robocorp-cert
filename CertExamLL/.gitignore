@@ -1,5 +1,6 @@
 testrun/
 output/
+data/
 venv/
 temp/
 .rpa/
