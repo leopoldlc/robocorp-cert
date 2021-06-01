@@ -10,6 +10,7 @@ Library        RPA.PDF
 Library        RPA.HTTP
 Library        RPA.Tables
 Library        RPA.Archive
+Library        RPA.Dialogs
 
 *** Keywords ***
 Open the robot order website
@@ -17,7 +18,9 @@ Open the robot order website
 
 *** Keywords ***
 Download CSV file
-    Download        https://robotsparebinindustries.com/orders.csv    overwrite=True
+    [Arguments]      ${user_url}
+    #Download        https://robotsparebinindustries.com/orders.csv    overwrite=True
+    Download    ${user_url}    overwrite=True
 
 *** Keywords ***
 Close the annoying modal
@@ -46,14 +49,14 @@ Go to order another robot
 
 *** Keywords ***
 Create a ZIP file of the receipts
-    Archive Folder With Zip    ${CURDIR}/data/order_receipts/pdf    ${OUTPUT_DIR}/orders.zip
+    Archive Folder With Zip    ${OUTPUT_DIR}/data/order_receipts/pdf    ${OUTPUT_DIR}/orders.zip
 
 *** Keywords ***
 Store the receipt as a PDF file
     [Arguments]     ${ord_num}
     Wait Until Element Is Visible    id:receipt
     ${order_receipt}=   Get Element Attribute    id:receipt    outerHTML 
-    ${order_pdf}=       Set Variable    ${CURDIR}/data/order_receipts/pdf/order_${ord_num}.pdf
+    ${order_pdf}=       Set Variable    ${OUTPUT_DIR}/data/order_receipts/pdf/order_${ord_num}.pdf
     #Sleep   5 
     Html To Pdf    ${order_receipt}     ${order_pdf}
     [Return]    ${order_pdf}
@@ -62,8 +65,8 @@ Store the receipt as a PDF file
 Take a screenshot of the robot
     [Arguments]     ${ord_num}
     Wait Until Element Is Visible    id:robot-preview-image
-    Screenshot     id:robot-preview-image   ${CURDIR}/data/order_receipts/img/order_${ord_num}.png      
-    [Return]            ${CURDIR}/data/order_receipts/img/order_${ord_num}.png
+    Screenshot     id:robot-preview-image   ${OUTPUT_DIR}/data/order_receipts/img/order_${ord_num}.png      
+    [Return]            ${OUTPUT_DIR}/data/order_receipts/img/order_${ord_num}.png
 
 *** Keywords ***
 Embed the robot screenshot to the receipt PDF file
@@ -82,10 +85,18 @@ Get orders
 Close robot order session
     Close Browser
 
+*** Keywords ***
+Get URL from user
+    Create Form    URL CSV File
+    Add Text Input    Specify URL    url_orders
+    ${user_input}=    Request Response
+    [Return]        ${user_input["url_orders"]}
+    
 *** Tasks ***
 Order robots from RobotSpareBin Industries Inc
     Open the robot order website
-    Download CSV file    
+    ${user_url}=    Get URL from user
+    Download CSV file        ${user_url}
     ${orders}=    Get orders
     Log    Found columns: ${orders.columns}
     FOR    ${row}    IN    @{orders}
