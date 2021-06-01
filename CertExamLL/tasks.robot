@@ -11,10 +11,13 @@ Library        RPA.HTTP
 Library        RPA.Tables
 Library        RPA.Archive
 Library        RPA.Dialogs
+Library        RPA.Robocloud.Secrets
 
 *** Keywords ***
 Open the robot order website
-    Open Available Browser        https://robotsparebinindustries.com/#/robot-order
+    ${robot_url}=        Get Secret    order_url
+    #Open Available Browser        https://robotsparebinindustries.com/#/robot-order
+    Open Available Browser    ${robot_url}[url]
 
 *** Keywords ***
 Download CSV file
